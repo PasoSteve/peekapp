@@ -53,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
     private double latitude;
     private double longitude;
 
+    //response from http post
+    private String serverresponse;
+
 
     // Allows quickly changing the app name and will rename the image storage folder
     private String app_folder = "peek";
@@ -368,6 +371,8 @@ public class MainActivity extends AppCompatActivity {
                     new Response.Listener<String>() {
                         @Override
                         public void onResponse(String response) {
+                            serverresponse = response;
+                            handleserverresponse();
 
                         }
                     }, new Response.ErrorListener() {
@@ -393,12 +398,20 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
             requestQueue.add(request);
-            Toast.makeText(this, "Picture Sent", Toast.LENGTH_SHORT).show();
-            currentpicnum = 0;
         } else if (currentpicnum == 0){
             Toast.makeText(this, "Take a picture first", Toast.LENGTH_SHORT).show();
         } else if (latitude == -1.0) {
-            Toast.makeText(this, "Location not acquired. Enable location permission and turn on locations services",
+            Toast.makeText(this, "Location not acquired. Enable location permission and turn on location services",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void handleserverresponse() {
+        if (serverresponse.equals("FALSE")){
+            Toast.makeText(this, "Picture Sent", Toast.LENGTH_SHORT).show();
+            currentpicnum = 0;
+        } else {
+            Toast.makeText(this, "Server communications failed. Try again or report to developer",
                     Toast.LENGTH_LONG).show();
         }
     }
