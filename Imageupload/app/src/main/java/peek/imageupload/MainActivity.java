@@ -1,7 +1,6 @@
 package peek.imageupload;
 
 import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -16,6 +15,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
@@ -23,7 +23,6 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -36,20 +35,15 @@ import com.android.volley.toolbox.Volley;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
-    //private Button button;
+
     private String encoded_string, image_name, android_key;
-    //private Bitmap bitmap;
-    private File file;
     private Uri file_uri;
-    //boolean isImageFitToScreen;
     private double latitude;
     private double longitude;
 
@@ -58,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // Allows quickly changing the app name and will rename the image storage folder
+    //could be local variable but easier at the top of the code
     private String app_folder = "peek";
 
     /*initializes current pic number. Number alternates from 1 to 2
@@ -142,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
         if (android_key.equals(not_set)) {
             Log.d("Tag", "Creating user id for 1st run");
             android_key = UUID.randomUUID().toString();
-            prefs.edit().putString("userGUID", android_key).commit();
+            prefs.edit().putString("userGUID", android_key).apply();
         }
 
     }
@@ -155,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
         if(hasWritePermission != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     REQUEST_CODE_ASK_WRITE_PERMISSIONS);
-            return;
         }
         //if request has previously been granted
         //Toast.makeText(MainActivity.this, "Write permission approved", Toast.LENGTH_LONG)
@@ -178,33 +172,32 @@ public class MainActivity extends AppCompatActivity {
         if (hasLocationPermission != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
                     REQUEST_CODE_ASK_LOCATION_PERMISSIONS);
-            return;
         }
     }
 
     //Need to handle nag code in the case they pic dont request again. Write is required for app function.
     //**************** to be implemented later.
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,@NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_CODE_ASK_WRITE_PERMISSIONS:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //pass
-                    //Toast.makeText(MainActivity.this, "Write permission approved", Toast.LENGTH_LONG)
-                    //        .show();
+                    Toast.makeText(MainActivity.this, "Write permission approved", Toast.LENGTH_LONG)
+                            .show();
 
-                    //new Encode_image().execute();
 
                 } else {
                     //failure
-                    Toast.makeText(MainActivity.this, "Permission denied. Required by App", Toast.LENGTH_LONG)
+                    Toast.makeText(MainActivity.this, "Write permission denied. Required by App", Toast.LENGTH_LONG)
                             .show();
                 }
                 break;
             case REQUEST_CODE_ASK_LOCATION_PERMISSIONS:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //pass
-                    //getlocation();
+                    Toast.makeText(MainActivity.this, "Location permission approved", Toast.LENGTH_LONG)
+                            .show();
                 } else {
                     Toast.makeText(MainActivity.this, "Location Permission denied. Required by App", Toast.LENGTH_LONG)
                             .show();
