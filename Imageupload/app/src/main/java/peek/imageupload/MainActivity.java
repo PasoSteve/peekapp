@@ -12,6 +12,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -144,34 +145,36 @@ public class MainActivity extends AppCompatActivity {
 
     final int REQUEST_CODE_ASK_WRITE_PERMISSIONS = 123;
     // Request code for write permissions.
-    private void requestwritepermission(){
+    private void requestwritepermission() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+            int hasWritePermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            if (hasWritePermission != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        REQUEST_CODE_ASK_WRITE_PERMISSIONS);
+            }
+            //if request has previously been granted
+            //Toast.makeText(MainActivity.this, "Write permission approved", Toast.LENGTH_LONG)
+            //        .show();
 
-        int hasWritePermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if(hasWritePermission != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_CODE_ASK_WRITE_PERMISSIONS);
+            //Run Encode Image Method if write permissions granted
+            //new Encode_image().execute();
+
+            //set the image view to the new picture
+            //ImageView cameraimagepreview = (ImageView) findViewById(R.id.cameraimage);
+            //assert cameraimagepreview != null;
+            //cameraimagepreview.setImageURI(file_uri);
+
         }
-        //if request has previously been granted
-        //Toast.makeText(MainActivity.this, "Write permission approved", Toast.LENGTH_LONG)
-        //        .show();
-
-        //Run Encode Image Method if write permissions granted
-        //new Encode_image().execute();
-
-        //set the image view to the new picture
-        //ImageView cameraimagepreview = (ImageView) findViewById(R.id.cameraimage);
-        //assert cameraimagepreview != null;
-        //cameraimagepreview.setImageURI(file_uri);
-
     }
 
     final private int REQUEST_CODE_ASK_LOCATION_PERMISSIONS = 456;
     private void requestlocationpermissions() {
-
-        int hasLocationPermission = checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
-        if (hasLocationPermission != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                    REQUEST_CODE_ASK_LOCATION_PERMISSIONS);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+            int hasLocationPermission = checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
+            if (hasLocationPermission != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                        REQUEST_CODE_ASK_LOCATION_PERMISSIONS);
+            }
         }
     }
 
@@ -249,19 +252,20 @@ public class MainActivity extends AppCompatActivity {
     //After the camera returns with the new picture then we request write permissions.
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 10 && resultCode == RESULT_OK){
+        if (requestCode == 10 && resultCode == RESULT_OK) {
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+                int hasWritePermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                if (hasWritePermission != PackageManager.PERMISSION_GRANTED) {
+                    requestwritepermission();
+                } else {
+                    new Encode_image().execute();
+                    ImageView cameraimagepreview = (ImageView) findViewById(R.id.cameraimage);
+                    assert cameraimagepreview != null;
+                    cameraimagepreview.setImageURI(file_uri);
+                }
 
-            int hasWritePermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            if(hasWritePermission != PackageManager.PERMISSION_GRANTED) {
-                requestwritepermission();
-            } else {
-                new Encode_image().execute();
-                ImageView cameraimagepreview = (ImageView) findViewById(R.id.cameraimage);
-                assert cameraimagepreview != null;
-                cameraimagepreview.setImageURI(file_uri);
+
             }
-
-
         }
     }
 
@@ -331,9 +335,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void getlocation() {
         //Get the location manager
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
         int hasLocationPermission = checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
         if (hasLocationPermission != PackageManager.PERMISSION_GRANTED) {
             requestlocationpermissions();
+        }
         } else {
 
             LocationManager locationManager = (LocationManager)
